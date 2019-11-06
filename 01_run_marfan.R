@@ -1,5 +1,8 @@
 # initialize packages ####
 
+#for benchmarking
+library(profvis)
+
 #load mixOmics
 library(mixOmics)
 
@@ -15,19 +18,37 @@ getwd()
 # helper functions ####
 source("./00_helper_functions.R")
 
-# analyse marfan data ####
+# load data ####
 #load("/trinity/home/cscala/01attila/06_msPLS/02_RealData_analyses/01_RealDataAnalysis/datasetXYZ.RData")
 load("./Marfan/datasetXYZ.RData")
 
+# Benchmarking ####
+
+profvis({
+  res_sRDA <- sRDAccp(predictor = Y, predicted = Z, nonzero = c(25), 
+                      multiple_LV = T, nr_LVs = 2, penalization = "ust")
+  sum(2)
+})
+
+microbenchmark(res_sRDA <- sRDAccp(predictor = Y, predicted = Z,
+                                   nonzero = c(25), 
+                                   multiple_LV = T, nr_LVs = 2, 
+                                   penalization = "ust"), 
+               spls(X = Y,Y = Z, keepX = c(25, 25), 
+                    keepY = c(dim(Z)[2],dim(Z)[2]), 
+                    ncomp = 2), 
+               times = 10, unit = "s")
+
+# analyse marfan data ####
 #run sRDA / sCCA from sRDA pacakge
 system.time(
-  res_sRDA <- sCCA(predictor = Y, predicted = Z, nonzero = c(25), multiple_LV = T, nr_LVs = 2, penalization = "ust")
+  res_sRDA <- sRDAccp(predictor = Y, predicted = Z, nonzero = c(25), 
+                      multiple_LV = T, nr_LVs = 2, penalization = "ust")
 )
-#str(res_sRDA)
 
 #run spls from mixOmics
 system.time(
-  res_spls <- spls(X = Y,Y = Z, keepX = c(25, 25), keepY = c(dim(Z)[2],dim(Z)[2]))  
+  res_spls <- spls(X = Y,Y = Z, keepX = c(25, 25), keepY = c(dim(Z)[2],dim(Z)[2]), ncomp = 2)  
 ) 
 class(res_spls)
 #str(res_spls)
@@ -35,6 +56,7 @@ class(res_spls)
 # after obtaining results, put sRDA outputs in mixOmics' "mixo_spls" class 
 res_sRDA <- reshape_sRDA_output_to_mixOmics(mix_omics_output = res_spls,
                                             old_rda_output = res_sRDA)
+
 
 #plotting ####
 X11()
@@ -72,4 +94,6 @@ sum(abs(res_spls$loadings[["Y"]][,2]))
 res_sRDA$loadings[["Y"]][,1][1:4]
 cor(res_sRDA$variates[["X"]][,1],Z[,1:4])
 
+sum(abs(cor(res_sRDA$variates[["X"]][,1],Z)))
+sum(abs(cor(res_spls$variates[["X"]][,1],Z)^2))
 
