@@ -94,6 +94,14 @@ sum(abs(res_spls$loadings[["Y"]][,2]))
 res_sRDA$loadings[["Y"]][,1][1:4]
 cor(res_sRDA$variates[["X"]][,1],Z[,1:4])
 
-sum(abs(cor(res_sRDA$variates[["X"]][,1],Z)))
-sum(abs(cor(res_spls$variates[["X"]][,1],Z)^2))
+sum(cor(res_sRDA$variates[["X"]][,1],Z)^2)
+sum(cor(res_spls$variates[["X"]][,1],Z)^2)
+
+abs(cor(res_sRDA$variates[["X"]][,1],Z))
+abs(cor(res_spls$variates[["X"]][,1],Z))
+
+plot(1:dim(Z)[2],abs(cor(res_sRDA$variates[["Y"]][,1],Z)), 
+     col = "blue", pch = 16)
+points(1:dim(Z)[2], abs(cor(res_spls$variates[["Y"]][,1],Z)), 
+       col ="red", pch = 16)
 
