@@ -6,7 +6,11 @@ B <- matrix(rnorm(10000), 100, 100)
 dim(A); dim(B)
 
 sourceCpp("test.cpp")
-microbenchmark(A%*%B,
-               armaMatMult(A, B), 
-               eigenMatMult(A, B), 
-               eigenMapMatMult(A, B), times = 10)
+TA <- t(A)
+TA%*%B
+
+
+microbenchmark(TA%*%B,
+               armaMatMult(TA, B), 
+               eigenMatMult(TA, B), 
+               eigenMapMatMult(TA, B), times = 10)
