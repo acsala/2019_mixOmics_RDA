@@ -11,27 +11,48 @@ reshape_sRDA_output_to_mixOmics <- function(mix_omics_output, old_rda_output){
   #  explained_variance
   # with old_rda_output.
   
-  #overwrite loadings
-  names(old_rda_output$ALPHA[[1]]) <- colnames(mix_omics_output$X)
-  names(old_rda_output$ALPHA[[2]]) <- colnames(mix_omics_output$X)
+  comp = old_rda_output$nr_latent_variables
+  for (i in 1:comp){
+    names(old_rda_output$ALPHA[[i]]) <- colnames(mix_omics_output$X)
+  }
   
+  
+  #overwrite loadings
   loadings <- list()
-  loadings[["X"]] <- cbind(old_rda_output$ALPHA[[1]], old_rda_output$ALPHA[[2]])
-  colnames(loadings[["X"]]) <- cbind("comp1", "comp2")
+  for (i in 1:comp){
+    loadings[["X"]] <- cbind(loadings[["X"]], old_rda_output$ALPHA[[i]])
+    loadings[["Y"]] <- cbind(loadings[["Y"]], old_rda_output$BETA[[i]])
+  }
+  
+  comp_names <- c("comp1")
+  if (comp > 1){
+    for (i in 2:comp){
+      comp_names <- cbind(comp_names,paste0("comp",i))
+    }
+  }
+  
+  colnames(loadings[["X"]]) <- comp_names
+  colnames(loadings[["Y"]]) <- comp_names
+  
   rownames(loadings$X) <- rownames(mix_omics_output$loadings$X)
-  loadings[["Y"]] <- cbind(old_rda_output$BETA[[1]], old_rda_output$BETA[[2]])
-  colnames(loadings[["Y"]]) <- cbind("comp1", "comp2")
   rownames(loadings$Y) <- rownames(mix_omics_output$loadings$Y)
+  
   mix_omics_output$loadings <- loadings
   
   #overwrite variates (scores)
   variates <- list()
-  variates[["X"]] <- cbind(old_rda_output$XI[[1]], old_rda_output$XI[[2]])
-  colnames(variates[["X"]]) <- cbind("comp1", "comp2")
+  for (i in 1:comp){
+    variates[["X"]] <- cbind(variates[["X"]], old_rda_output$XI[[i]])
+    variates[["Y"]] <- cbind(variates[["Y"]], old_rda_output$ETA[[i]])
+  }
+  
+
+  colnames(variates[["X"]]) <- comp_names
+  colnames(variates[["Y"]]) <- comp_names
+  
   rownames(variates$X) <- rownames(mix_omics_output$variates$X)
-  variates[["Y"]] <- cbind(old_rda_output$ETA[[1]], old_rda_output$ETA[[2]])
-  colnames(variates[["Y"]]) <- cbind("comp1", "comp2")
   rownames(variates$Y) <- rownames(mix_omics_output$variates$Y)
+  
   mix_omics_output$variates <- variates
   
   # variates explained vairance after variates and loadings are replaced
@@ -133,4 +154,100 @@ deflation = function(X, y){
   
   R <- X - tcrossprod(y,p)
   return(list(p=p,R=R))
+}
+
+get_nonzero_variables <- function(res_object){
+  
+  
+  nonzr_positionsX <- apply(res_object$loadings[["X"]], 
+                           2, function(x) which(x!=0))
+  
+  nonzr_positionsY <- apply(res_object$loadings[["Y"]], 
+                            2, function(x) which(x!=0))
+  
+  res_object$nzX_pos <- nonzr_positionsX
+  res_object$nzY_pos <- nonzr_positionsX
+  
+  comp <- res_object$ncomp
+
+  nz_loadings <- list()
+  for (i in 1:comp){
+    nz_loadings[["X"]] <- cbind(nz_loadings[["X"]],
+                                names(res_object$loadings[["X"]][,i][nonzr_positionsX[,i]]))
+    nz_loadings[["Y"]] <- cbind(nz_loadings[["Y"]],
+                                names(res_object$loadings[["Y"]][,i][nonzr_positionsY[,i]]))
+  }
+
+  res_object$nz_loading_names <- nz_loadings
+  
+  return(res_object)
+}
+
+get_nr_of_common_components <- function(res_object1, res_object2, ncomp){
+  nr_of_common_comps <- c()
+  for (i in 1:ncomp){
+    if (i == 1){
+      nr_of_common_comps <- cbind(sum(res_object1$nz_loading_names[["X"]][,i] %in% 
+                                        res_object2$nz_loading_names[["X"]][,i]))
+    } else {
+      nr_of_common_comps <- cbind(nr_of_common_comps, sum(res_object1$nz_loading_names[["X"]][,i] %in% 
+                                                            res_object2$nz_loading_names[["X"]][,i]))
+    }
+    
+  }
+  
+  return(nr_of_common_comps)
+  
+}
+
+get_PLS_CCA_RDA_results <- function(X, Y, 
+                                    nr_nonz = 10, 
+                                    nr_comp = 3,
+                                    pls_mode = "canonical",
+                                    penalty_mode = "ust",
+                                    RDA = T, PLS = T, CCA = T){
+  
+  ncomp = nr_comp
+  
+  res_spls <- c("not_called")
+  res_sRDA <- c("not_called")
+  res_sCCA <- c("not_called")
+  
+  if(PLS){
+    #run spls from mixOmics
+    res_spls <- spls(X,Y,
+                     keepX = rep(nr_nonz, ncomp),
+                     keepY = rep(dim(Y)[2], ncomp),
+                     ncomp = ncomp, mode = pls_mode)
+  }
+  
+  if(RDA){
+    #run sRDA / sCCA from sRDA pacakge
+    res_sRDA <- sRDA(X, Y,
+                     nonzero = c(nr_nonz),
+                     multiple_LV = T, 
+                     nr_LVs = ncomp,
+                     penalization = penalty_mode)
+    # after obtaining results, put sRDA outputs in mixOmics' "mixo_spls" class 
+    res_sRDA <- reshape_sRDA_output_to_mixOmics(mix_omics_output = res_spls,
+                                                old_rda_output = res_sRDA)
+  }
+  
+  if(CCA){
+    # run CCA ######
+    res_sCCA <- sCCA(X, Y,
+                     nonzero = c(nr_nonz),
+                     multiple_LV = T, 
+                     nr_LVs = ncomp,
+                     penalization = penalty_mode)
+    # after obtaining results, put sCCA outputs in mixOmics' "mixo_spls" class 
+    res_sCCA <- reshape_sRDA_output_to_mixOmics(mix_omics_output = res_spls,
+                                                old_rda_output = res_sCCA)
+  }
+  
+  
+  return <- list(res_sRDA = res_sRDA,
+                 res_sCCA = res_sCCA,
+                 res_spls = res_spls)
+  
 }
