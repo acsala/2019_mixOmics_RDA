@@ -303,35 +303,49 @@ sRDA_mixOmics = function(X,
                   multiple_LV = multiple_LV, 
                   nr_LVs = ncomp)
 
-    result
-
+    result_pls <-  spls(X,Y,
+                     keepX = rep(nonzero, ncomp),
+                     keepY = rep(dim(Y)[2], ncomp),
+                     ncomp = ncomp, mode = "regression")
+    
     if(keepX == FALSE) X <- c("Set keepX = TRUE for returning X")
     if(keepY == FALSE) X <- c("Set keepX = TRUE for returning Y")
     
+    loadings <- list("X" = do.call(cbind,result$ALPHA), "Y" =  do.call(cbind,result$BETA))
+    colnames(loadings$X) <- paste0("comp", seq_len(ncol(loadings$X)))
+    colnames(loadings$Y) <- paste0("comp", seq_len(ncol(loadings$Y)))
+
+    variates <- list("X" = do.call(cbind,result$XI), "Y" =  do.call(cbind,result$ETA))
+    colnames(variates$X) <- paste0("comp", seq_len(ncol(variates$X)))
+    colnames(variates$Y) <- paste0("comp", seq_len(ncol(variates$Y)))
+    
     # choose the desired output from 'result'
     out = list(
-        call = match.call(),
-        X = X,
-        Y = Y,
+        call = match.call(), 
+        X = X, 
+        Y = Y, 
         ncomp = result$ncomp,
-        mode = result$mode,
-        keepX = result$keepX,
+        mode = result$penalty_mode,
+        keepX = result$keepX, 
         keepY = result$keepY,
-        variates = result$variates,
-        loadings = result$loadings,
-        loadings.star = result$loadings.star,
-        names = result$names,
-        tol = result$tol,iter = result$iter,
-        max.iter = result$max.iter,
-        nzv = result$nzv,
-        scale = scale,
-        logratio = logratio,
-        explained_variance = result$explained_variance,
-        input.X = result$input.X,
-        mat.c = result$mat.c#,
+        variates = variates,
+        loadings = loadings
+        #loadings.star = result$loadings.star,
+        #names = result$names,
+        #tol = result$tol,iter = result$iter,
+        #max.iter = result$max.iter,
+        #nzv = result$nzv,
+        #scale = scale,
+        #logratio = logratio,
+        #explained_variance = result$explained_variance,
+        #input.X = result$input.X,
+        #mat.c = result$mat.c#,
     )
-    
+
+    str(result_pls$variates)
+    str(out$variates)
    
+ 
     class(out) = c("mixo_srda")
     # output if multilevel analysis
     if (!is.null(multilevel))
