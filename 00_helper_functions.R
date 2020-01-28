@@ -1,8 +1,8 @@
 # helper functions ####
 library(matrixStats)
-library(Rfast)
-library(Rcpp)
-sourceCpp("test.cpp")
+#library(Rfast)
+#library(Rcpp)
+#sourceCpp("test.cpp")
 
 reshape_sRDA_output_to_mixOmics <- function(mix_omics_output, old_rda_output){
   # function takes the mix_omics_output output and overwrites 
