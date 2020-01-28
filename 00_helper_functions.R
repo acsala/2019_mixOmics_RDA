@@ -200,6 +200,7 @@ get_nr_of_common_components <- function(res_object1, res_object2, ncomp){
   
 }
 
+
 get_PLS_CCA_RDA_results <- function(X, Y, 
                                     nr_nonz = 10, 
                                     nr_comp = 3,
@@ -250,4 +251,94 @@ get_PLS_CCA_RDA_results <- function(X, Y,
                  res_sCCA = res_sCCA,
                  res_spls = res_spls)
   
+}
+
+
+sRDA_mixOmics = function(X,
+                         Y,
+                         ncomp = 2,
+                         keepX = FALSE,
+                         keepY = FALSE,
+                         scale = TRUE,
+                         tol = 1e-06,
+                         max.iter = 100,
+                         penalty_mode = c("none", "enet", "ust"),
+                         ridge_penalty = 1,
+                         nonzero = 1,
+                         cross_validate = FALSE                        
+                         )
+{
+    #tester values
+    X
+    Y
+    ncomp = 2
+    keepX = FALSE
+    keepY = FALSE
+    scale = TRUE
+    tol = 1e-06
+    max.iter = 100
+    penalty_mode = c("ust")
+    ridge_penalty = 1
+    nonzero = 10
+    cross_validate = FALSE 
+
+    
+    if(scale == TRUE) {
+        X <- scale(X)
+        Y <- scale(Y)
+    }
+    if(ncomp > 1){
+        multiple_LV = TRUE
+    }else{
+        multiple_LV = FALSE
+    }
+
+    
+    # call to 'sRDA'
+    result = sRDA(predictor = X,
+                  predicted = Y,
+                  penalization = penalty_mode,
+                  ridge_penalty = ridge_penalty,
+                  nonzero = nonzero,
+                  multiple_LV = multiple_LV, 
+                  nr_LVs = ncomp)
+
+    result
+
+    if(keepX == FALSE) X <- c("Set keepX = TRUE for returning X")
+    if(keepY == FALSE) X <- c("Set keepX = TRUE for returning Y")
+    
+    # choose the desired output from 'result'
+    out = list(
+        call = match.call(),
+        X = X,
+        Y = Y,
+        ncomp = result$ncomp,
+        mode = result$mode,
+        keepX = result$keepX,
+        keepY = result$keepY,
+        variates = result$variates,
+        loadings = result$loadings,
+        loadings.star = result$loadings.star,
+        names = result$names,
+        tol = result$tol,iter = result$iter,
+        max.iter = result$max.iter,
+        nzv = result$nzv,
+        scale = scale,
+        logratio = logratio,
+        explained_variance = result$explained_variance,
+        input.X = result$input.X,
+        mat.c = result$mat.c#,
+    )
+    
+   
+    class(out) = c("mixo_srda")
+    # output if multilevel analysis
+    if (!is.null(multilevel))
+    {
+        out$multilevel = multilevel
+        class(out) = c("mixo_mlspls",class(out))
+    }
+    
+    return(invisible(out))
 }
