@@ -257,31 +257,35 @@ get_PLS_CCA_RDA_results <- function(X, Y,
 sRDA_mixOmics = function(X,
                          Y,
                          ncomp = 2,
-                         keepX = FALSE,
-                         keepY = FALSE,
+                         keepX = 10,
+                         keepY = dim(Y)[2],
                          scale = TRUE,
                          tol = 1e-06,
                          max.iter = 100,
                          penalty_mode = c("none", "enet", "ust"),
                          ridge_penalty = 1,
                          nonzero = 1,
-                         cross_validate = FALSE                        
+                         cross_validate = FALSE,
+                         logratio = "none"
                          )
 {
     #tester values
     X
     Y
     ncomp = 2
-    keepX = FALSE
-    keepY = FALSE
-    scale = TRUE
+    keepX = 10
+    keepY = dim(Y)[2]
+    scale = FALSE
     tol = 1e-06
     max.iter = 100
     penalty_mode = c("ust")
     ridge_penalty = 1
     nonzero = 10
-    cross_validate = FALSE 
+    cross_validate = FALSE
+    logratio = "none"
 
+    input.X = X # save the checked X, before logratio/multileve/scale
+   
     
     if(scale == TRUE) {
         X <- scale(X)
@@ -308,43 +312,73 @@ sRDA_mixOmics = function(X,
                      keepY = rep(dim(Y)[2], ncomp),
                      ncomp = ncomp, mode = "regression")
     
-    if(keepX == FALSE) X <- c("Set keepX = TRUE for returning X")
-    if(keepY == FALSE) X <- c("Set keepX = TRUE for returning Y")
-    
+    # create correct loadings structure
     loadings <- list("X" = do.call(cbind,result$ALPHA), "Y" =  do.call(cbind,result$BETA))
     colnames(loadings$X) <- paste0("comp", seq_len(ncol(loadings$X)))
     colnames(loadings$Y) <- paste0("comp", seq_len(ncol(loadings$Y)))
 
+    loadings.star <- list("X" = apply(loadings$X,2,scale), "Y" = apply(loadings$Y,2,scale))
+    rownames(loadings.star$X) <- rownames(loadings$X)
+    rownames(loadings.star$Y) <- rownames(loadings$Y)
+    
+    # create correct variates structure
     variates <- list("X" = do.call(cbind,result$XI), "Y" =  do.call(cbind,result$ETA))
     colnames(variates$X) <- paste0("comp", seq_len(ncol(variates$X)))
     colnames(variates$Y) <- paste0("comp", seq_len(ncol(variates$Y)))
+
+    # create correct names structure
+    colnames <- list("X" = colnames(X), "Y" = colnames(Y))  
+    names <- list ("sample" = rownames(X), "colnames" = colnames, "blocks" = c("X", "Y"))
+
+    # variates explained vairance after variates and loadings are replaced
+    explained_variance <- list("X" = explained_variance(X,
+                                                        variates$X,
+                                                        ncomp),
+                               "Y" = explained_variance(Y,
+                                                        variates$Y,
+                                                        ncomp))
+
     
+    # log transform from mixOmics
+    #-----------------------------#
+    #-- logratio transformation --#
+    
+    X = logratio.transfo(X=X, logratio=logratio)
+    
+    #as X may have changed
+    if (ncomp > min(ncol(X), nrow(X)))
+    stop("'ncomp' should be smaller than ", min(ncol(X), nrow(X)),
+    call. = FALSE)
+    
+    #-- logratio transformation --#
+    #-----------------------------#
+
     # choose the desired output from 'result'
     out = list(
         call = match.call(), 
         X = X, 
         Y = Y, 
-        ncomp = result$ncomp,
-        mode = result$penalty_mode,
-        keepX = result$keepX, 
-        keepY = result$keepY,
+        ncomp = ncomp,
+        mode = penalty_mode,
+        keepX = keepX, 
+        keepY = keepY,
         variates = variates,
-        loadings = loadings
-        #loadings.star = result$loadings.star,
-        #names = result$names,
-        #tol = result$tol,iter = result$iter,
-        #max.iter = result$max.iter,
-        #nzv = result$nzv,
-        #scale = scale,
-        #logratio = logratio,
-        #explained_variance = result$explained_variance,
-        #input.X = result$input.X,
+        loadings = loadings,
+        loadings.star = result$loadings.star,
+        names = names,
+        tol = tol,
+        iter = result$nr_iterations,
+        max.iter = result$max.iter,
+        nzv = result$nzv,
+        scale = scale,
+        logratio = logratio,
+        explained_variance = explained_variance,
+        input.X = input.X,
         #mat.c = result$mat.c#,
     )
 
-    str(result_pls$variates)
-    str(out$variates)
-   
+    str(result_pls)
+    str(out)
  
     class(out) = c("mixo_srda")
     # output if multilevel analysis
@@ -353,6 +387,10 @@ sRDA_mixOmics = function(X,
         out$multilevel = multilevel
         class(out) = c("mixo_mlspls",class(out))
     }
+
+    if(keepX == FALSE) X <- c("Set keepX = TRUE for returning X")
+    if(keepY == FALSE) X <- c("Set keepX = TRUE for returning Y")
+    
     
     return(invisible(out))
 }
