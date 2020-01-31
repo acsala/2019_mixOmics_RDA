@@ -324,9 +324,6 @@ sRDA_mixOmics = function(X,
     colnames(variates$X) <- paste0("comp", seq_len(ncol(variates$X)))
     colnames(variates$Y) <- paste0("comp", seq_len(ncol(variates$Y)))
 
-    rownames(loadings$X) = rownames(loadings.star$X) = rownames(variates$X) = colnames$X
-    rownames(loadings$Y) = rownames(loadings.star$Y) = rownames(variates$Y) = colnames$Y
-
     # variates explained vairance after variates and loadings are replaced
     explained_variance <- list("X" = explained_variance(X,
                                                         variates$X,
