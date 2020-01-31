@@ -305,6 +305,10 @@ sRDA_mixOmics = function(X,
                   nonzero = keepX,
                   multiple_LV = multiple_LV, 
                   nr_LVs = ncomp)
+
+    # create correct names structure
+    colnames <- list("X" = colnames(X), "Y" = colnames(Y))  
+    names <- list ("sample" = rownames(X), "colnames" = colnames, "blocks" = c("X", "Y"))
     
     # create correct loadings structure
     loadings <- list("X" = do.call(cbind,result$ALPHA), "Y" =  do.call(cbind,result$BETA))
@@ -320,9 +324,8 @@ sRDA_mixOmics = function(X,
     colnames(variates$X) <- paste0("comp", seq_len(ncol(variates$X)))
     colnames(variates$Y) <- paste0("comp", seq_len(ncol(variates$Y)))
 
-    # create correct names structure
-    colnames <- list("X" = colnames(X), "Y" = colnames(Y))  
-    names <- list ("sample" = rownames(X), "colnames" = colnames, "blocks" = c("X", "Y"))
+    rownames(loadings$X) = rownames(loadings.star$X) = rownames(variates$X) = colnames$X
+    rownames(loadings$Y) = rownames(loadings.star$Y) = rownames(variates$Y) = colnames$Y
 
     # variates explained vairance after variates and loadings are replaced
     explained_variance <- list("X" = explained_variance(X,
@@ -358,7 +361,7 @@ sRDA_mixOmics = function(X,
         keepY = keepY,
         variates = variates,
         loadings = loadings,
-        loadings.star = result$loadings.star,
+        loadings.star = loadings.star,
         names = names,
         tol = tol,
         iter = result$nr_iterations,
