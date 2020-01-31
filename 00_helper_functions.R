@@ -317,11 +317,17 @@ sRDA_mixOmics = function(X,
     loadings.star <- list("X" = apply(loadings$X,2,scale), "Y" = apply(loadings$Y,2,scale))
     rownames(loadings.star$X) <- rownames(loadings$X)
     rownames(loadings.star$Y) <- rownames(loadings$Y)
+
+    #rownames(loadings$X) = rownames(loadings.star$X) = colnames$X
+    #rownames(loadings$Y) = rownames(loadings.star$Y) = colnames$Y
+    
     
     # create correct variates structure
     variates <- list("X" = do.call(cbind,result$XI), "Y" =  do.call(cbind,result$ETA))
     colnames(variates$X) <- paste0("comp", seq_len(ncol(variates$X)))
     colnames(variates$Y) <- paste0("comp", seq_len(ncol(variates$Y)))
+
+    #rownames(variates$X) = rownames(variates$Y) = names$sample
 
     # variates explained vairance after variates and loadings are replaced
     explained_variance <- list("X" = explained_variance(X,
