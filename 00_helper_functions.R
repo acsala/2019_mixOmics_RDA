@@ -269,20 +269,20 @@ sRDA_mixOmics = function(X,
                          logratio = "none"
                          )
 {
-    #tester values
-    X
-    Y
-    ncomp = 2
-    keepX = 10
-    keepY = dim(Y)[2]
-    scale = FALSE
-    tol = 1e-06
-    max.iter = 100
-    penalty_mode = c("ust")
-    ridge_penalty = 1
-    nonzero = 10
-    cross_validate = FALSE
-    logratio = "none"
+    ## #tester values
+    ## X
+    ## Y
+    ## ncomp = 2
+    ## keepX = 10
+    ## keepY = dim(Y)[2]
+    ## scale = FALSE
+    ## tol = 1e-06
+    ## max.iter = 100
+    ## penalty_mode = c("ust")
+    ## ridge_penalty = 1
+    ## nonzero = 10
+    ## cross_validate = FALSE
+    ## logratio = "none"
 
     input.X = X # save the checked X, before logratio/multileve/scale
    
@@ -368,13 +368,14 @@ sRDA_mixOmics = function(X,
         names = names,
         tol = tol,
         iter = result$nr_iterations,
-        max.iter = result$max.iter,
-        nzv = result$nzv,
+        max.iter = max.iter,
+        #nzv = result$nzv, #not implemented
         scale = scale,
         logratio = logratio,
         explained_variance = explained_variance,
-        input.X = input.X,
-        #mat.c = result$mat.c#,
+        input.X = input.X
+        #mat.c = result$mat.c # not implemented, comes from internal_mint.block,
+        #prob for multilevel studies
     )
 
     str(result_pls)
