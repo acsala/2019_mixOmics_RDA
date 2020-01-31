@@ -264,7 +264,6 @@ sRDA_mixOmics = function(X,
                          max.iter = 100,
                          penalty_mode = c("none", "enet", "ust"),
                          ridge_penalty = 1,
-                         nonzero = 1,
                          cross_validate = FALSE,
                          logratio = "none"
                          )
@@ -303,14 +302,9 @@ sRDA_mixOmics = function(X,
                   predicted = Y,
                   penalization = penalty_mode,
                   ridge_penalty = ridge_penalty,
-                  nonzero = nonzero,
+                  nonzero = keepX,
                   multiple_LV = multiple_LV, 
                   nr_LVs = ncomp)
-
-    result_pls <-  spls(X,Y,
-                     keepX = rep(nonzero, ncomp),
-                     keepY = rep(dim(Y)[2], ncomp),
-                     ncomp = ncomp, mode = "regression")
     
     # create correct loadings structure
     loadings <- list("X" = do.call(cbind,result$ALPHA), "Y" =  do.call(cbind,result$BETA))
@@ -369,29 +363,17 @@ sRDA_mixOmics = function(X,
         tol = tol,
         iter = result$nr_iterations,
         max.iter = max.iter,
-        #nzv = result$nzv, #not implemented
         scale = scale,
         logratio = logratio,
         explained_variance = explained_variance,
         input.X = input.X
+        #nzv = result$nzv, #not implemented
         #mat.c = result$mat.c # not implemented, comes from internal_mint.block,
         #prob for multilevel studies
     )
 
-    str(result_pls)
-    str(out)
- 
     class(out) = c("mixo_srda")
     # output if multilevel analysis
-    if (!is.null(multilevel))
-    {
-        out$multilevel = multilevel
-        class(out) = c("mixo_mlspls",class(out))
-    }
-
-    if(keepX == FALSE) X <- c("Set keepX = TRUE for returning X")
-    if(keepY == FALSE) X <- c("Set keepX = TRUE for returning Y")
-    
     
     return(invisible(out))
 }
