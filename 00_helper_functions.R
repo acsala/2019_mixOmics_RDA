@@ -268,20 +268,19 @@ sRDA_mixOmics = function(X,
                          logratio = "none"
                          )
 {
-    ## #tester values
-    ## X
-    ## Y
-    ## ncomp = 2
-    ## keepX = 10
-    ## keepY = dim(Y)[2]
-    ## scale = FALSE
-    ## tol = 1e-06
-    ## max.iter = 100
-    ## penalty_mode = c("ust")
-    ## ridge_penalty = 1
-    ## nonzero = 10
-    ## cross_validate = FALSE
-    ## logratio = "none"
+    #tester values
+    X
+    Y
+    ncomp = 2
+    keepX = 10
+    keepY = dim(Y)[2]
+    scale = FALSE
+    tol = 1e-06
+    max.iter = 100
+    penalty_mode = c("ust")
+    ridge_penalty = 1
+    cross_validate = FALSE
+    logratio = "none"
 
     input.X = X # save the checked X, before logratio/multileve/scale
    
