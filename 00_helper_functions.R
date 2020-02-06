@@ -377,8 +377,9 @@ sRDA_mixOmics = function(X,
         #prob for multilevel studies
     )
 
-    class(out) = c("mixo_srda")
+    class(out) = c("mixo_spls")
     # output if multilevel analysis
     
     return(invisible(out))
 }
+
