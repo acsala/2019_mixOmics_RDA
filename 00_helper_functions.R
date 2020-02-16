@@ -1,5 +1,6 @@
 #helper functions ####
 library(matrixStats)
+library(colorspace)
 #library(Rfast)
 #library(Rcpp)
 #sourceCpp("test.cpp")
@@ -380,4 +381,37 @@ sRDA_mixOmics = function(X,
     
     return(invisible(out))
 }
+  
+col <- sequential_hcl(3, palette = "Light Grays", alpha = 0.5)
+plot_cus <- function(x = c(),y = c(), 
+                     xlim = c(),
+                     ylim = c(),
+                     xlab = "x",
+                     ylab = "y",
+                     bg = "#555555AA",
+                     col = "white",
+                     plot_Yaxis = "T",
+                     plot_Xaxis = "T",
+                     xaxt = "n",
+                     yaxt = "n",
+                     type = "n",
+                     axes = FALSE,
+                     plot_points = TRUE){
 
+    plot(x = x, y = y, 
+         xlim = xlim,
+         ylim = ylim,
+         xlab = xlab,
+         ylab = ylab,
+         axes = axes,
+         xaxt = xaxt,
+         yaxt = yaxt,
+         type = type
+         )
+    if(plot_Xaxis) axis(side = 1, las = 1, lwd = 2)
+    if(plot_Yaxis) axis(side = 2, las = 1, lwd = 2)
+    
+    if(plot_points) points(x, y, pch = 21, cex = 1.5,
+                           col = col, bg = bg,
+                           lwd = 1)
+}
