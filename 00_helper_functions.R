@@ -381,8 +381,22 @@ sRDA_mixOmics = function(X,
     
     return(invisible(out))
 }
-  
-col <- sequential_hcl(3, palette = "Light Grays", alpha = 0.5)
+
+
+plot_CV_results <- function(res_object,
+                            xlim = c(),
+                            ylim = c(),
+                            ylab = "y",
+                            xlab = "x"){
+
+    plot_cus(res_object$CV_results$mean_abs_cors[,3],
+             xlim = xlim,
+             ylim = ylim,
+             ylab = ylab,
+             xlab = xlab)
+
+}
+
 plot_cus <- function(x = c(),y = c(), 
                      xlim = c(),
                      ylim = c(),
@@ -415,3 +429,84 @@ plot_cus <- function(x = c(),y = c(),
                            col = col, bg = bg,
                            lwd = 1)
 }
+
+
+plot_CV_results <- function(res_object,
+                            xlim = c(),
+                            ylim = c(),
+                            ylab = "Sum of absolute correlations",
+                            xlab = "Number of nonzeros",
+                            labels_Xaxis = c(),
+                            labels_Yaxis = c(),
+                            labels_Xat = c(),
+                            labels_Yat = c(),
+                            spline_all_knots = T,
+                            spline_df = T){
+  
+  x = 1:length(res_object$CV_results$mean_abs_cors[,3])
+  y = res_object$CV_results$mean_abs_cors[,3]
+  plot_cus(y = y,
+           x = x,
+           xlim = xlim,
+           ylim = ylim,
+           ylab = ylab,
+           xlab = xlab,
+           labels_Xaxis = res_object$CV_results$mean_abs_cors[,2],
+           labels_Yaxis = labels_Yaxis,
+           labels_Xat = x,
+           labels_Yat = labels_Yat)
+
+  if(spline_df == T){
+    spline_df = length(x)
+  }
+
+  spline_res <- smooth.spline(x, y,
+                              all.knots = spline_all_knots,
+                              df= spline_df)
+
+  lines(predict(spline_res, x)$y, col = "grey", lwd = 2)
+
+}
+
+plot_cus <- function(x = c(),y = c(), 
+                     xlim = c(),
+                     ylim = c(),
+                     xlab = "x",
+                     ylab = "y",
+                     bg = "#555555AA",
+                     col = "white",
+                     plot_Yaxis = "T",
+                     plot_Xaxis = "T",
+                     labels_Xaxis = c(),
+                     labels_Yaxis = c(),
+                     labels_Xat = c(),
+                     labels_Yat = c(),
+                     xaxt = "n",
+                     yaxt = "n",
+                     type = "n",
+                     axes = FALSE,
+                     plot_points = TRUE){
+
+  plot(x = x, y = y, 
+       xlim = xlim,
+       ylim = ylim,
+       xlab = xlab,
+       ylab = ylab,
+       axes = axes,
+       xaxt = xaxt,
+       yaxt = yaxt,
+       type = type
+       )
+    
+  if(plot_points) points(x, y, pch = 21, cex = 1.5,
+                         col = col, bg = bg,
+                         lwd = 1)
+
+  if(plot_Xaxis) axis(side = 1, las = 1,
+                      lwd = 2, labels = labels_Xaxis, at = labels_Xat)
+  if(plot_Yaxis) axis(side = 2, las = 1,
+                      lwd = 2, labels = labels_Yaxis, at = labels_Yat)
+
+  
+}
+
