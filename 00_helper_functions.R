@@ -1,10 +1,10 @@
-# helper functions ####
+#helper functions ####
 library(matrixStats)
 #library(Rfast)
 #library(Rcpp)
 #sourceCpp("test.cpp")
 
-reshape_sRDA_output_to_mixOmics <- function(mix_omics_output, old_rda_output){
+reshape_sRDA_output_to_mixOmics <- function(X, Y, mix_omics_output, old_rda_output){
   # function takes the mix_omics_output output and overwrites 
   #  loadings, 
   #  variates, 
@@ -57,13 +57,13 @@ reshape_sRDA_output_to_mixOmics <- function(mix_omics_output, old_rda_output){
   
   # variates explained vairance after variates and loadings are replaced
   explained_variance <- list()
-  explained_variance[["X"]] <- explained_variance(mix_omics_output$X,
-                                                  mix_omics_output$variates$X,
-                                                  mix_omics_output$ncomp)
-  explained_variance[["Y"]] <- explained_variance(mix_omics_output$Y,
-                                                  mix_omics_output$variates$Y,
-                                                  mix_omics_output$ncomp)
-  
+    explained_variance[["X"]] <- apply(variates$X,2,function(x) sum(cor(X, x)^2)/dim(X)[2])
+    explained_variance[["Y"]] <- explained_variance(Y, variates$X, ncomp)
+    #explained_variance[["Y"]] <- apply(variates$X,2,function(x) sum(cor(Y, x)^2)/dim(Y)[2])
+
+    
+
+    
   mix_omics_output$explained_variance <- explained_variance
   
   return(mix_omics_output)
@@ -230,7 +230,7 @@ get_PLS_CCA_RDA_results <- function(X, Y,
                      nr_LVs = ncomp,
                      penalization = penalty_mode)
     # after obtaining results, put sRDA outputs in mixOmics' "mixo_spls" class 
-    res_sRDA <- reshape_sRDA_output_to_mixOmics(mix_omics_output = res_spls,
+    res_sRDA <- reshape_sRDA_output_to_mixOmics(X, Y, mix_omics_output = res_spls,
                                                 old_rda_output = res_sRDA)
   }
   
@@ -242,7 +242,7 @@ get_PLS_CCA_RDA_results <- function(X, Y,
                      nr_LVs = ncomp,
                      penalization = penalty_mode)
     # after obtaining results, put sCCA outputs in mixOmics' "mixo_spls" class 
-    res_sCCA <- reshape_sRDA_output_to_mixOmics(mix_omics_output = res_spls,
+    res_sCCA <- reshape_sRDA_output_to_mixOmics(X, Y, mix_omics_output = res_spls,
                                                 old_rda_output = res_sCCA)
   }
   
@@ -283,19 +283,19 @@ sRDA_mixOmics = function(X,
     ## logratio = "none"
 
     input.X = X # save the checked X, before logratio/multileve/scale
-   
+    input.Y = Y
     
-    if(scale == TRUE) {
-        X <- scale(X)
-        Y <- scale(Y)
-    }
     if(ncomp > 1){
         multiple_LV = TRUE
     }else{
         multiple_LV = FALSE
     }
-
     
+    if(scale == TRUE) {
+        X <- scale(X)
+        Y <- scale(Y)
+    }
+
     # call to 'sRDA'
     result = sRDA(predictor = X,
                   predicted = Y,
@@ -330,11 +330,9 @@ sRDA_mixOmics = function(X,
     rownames(variates$X) = rownames(variates$Y) = names$sample
 
     # variates explained vairance after variates and loadings are replaced
-    explained_variance <- list("X" = explained_variance(X,
+    explained_variance <- list("X" = apply(variates$X,2,function(x) sum(cor(input.X, x)^2)/dim(X)[2]),
+                               "Y" = explained_variance(input.Y,
                                                         variates$X,
-                                                        ncomp),
-                               "Y" = explained_variance(Y,
-                                                        variates$Y,
                                                         ncomp))
 
     
