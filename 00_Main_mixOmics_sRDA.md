@@ -1,21 +1,21 @@
 
 # Table of Contents
 
-1.  [Introduction to sRDA in mixOmics](#org7a4e0f7)
-    1.  [Biological questions to answer with sRDA](#orge43e88c)
-        1.  [Which are the "important" explanatory variables that explain the most variance in the response variables?](#org130606e)
-        2.  [Which response variables are affected most strongly by the "important" explanatory variables?](#org6929597)
-        3.  [What is the "quantified" effect of the explanatory variables on the response variables](#org119c9ef)
-2.  [Comparison of latent variable based methods in terms of objective functions](#org1a2b0bc)
-3.  [Cross validated analysis](#org1279ee3)
-4.  [Compare sRDA and sPLS canonical mode with 5 components on mixOmics breast.TCGA data](#org5839204)
-    1.  [Overlapping variables](#orgfd491ff)
-    2.  [Benchmark correlation](#orgea94e63)
-5.  [References](#org6fd3c3b)
+1.  [Introduction to sRDA in mixOmics](#orgfaccb8e)
+    1.  [Biological questions to answer with sRDA](#org548a532)
+        1.  [Which are the "important" explanatory variables that explain the most variance in the response variables?](#org2114316)
+        2.  [Which response variables are affected most strongly by the "important" explanatory variables?](#orgad67c73)
+        3.  [What is the "quantified" effect of the explanatory variables on the response variables](#org0448ac3)
+2.  [Comparison of latent variable based methods in terms of objective functions](#orge0f76cb)
+3.  [Cross validated analysis](#org96b30eb)
+4.  [Compare sRDA and sPLS canonical mode with 5 components on mixOmics breast.TCGA data](#org79e1c62)
+    1.  [Overlapping variables](#orgae4995b)
+    2.  [Benchmark correlation](#orgf78af57)
+5.  [References](#orgcff9182)
 
 
 
-<a id="org7a4e0f7"></a>
+<a id="orgfaccb8e"></a>
 
 # Introduction to sRDA in mixOmics
 
@@ -60,7 +60,7 @@ interpreted as the multiple regression correlation coefficient per
 response variable.
 
 
-<a id="orge43e88c"></a>
+<a id="org548a532"></a>
 
 ## Biological questions to answer with sRDA
 
@@ -123,7 +123,7 @@ most variance in the protein levels. With these results, we can
 answer our biological questions.
 
 
-<a id="org130606e"></a>
+<a id="org2114316"></a>
 
 ### Which are the "important" explanatory variables that explain the most variance in the response variables?
 
@@ -343,7 +343,7 @@ of the protein variables).
 </table>
 
 
-<a id="org6929597"></a>
+<a id="orgad67c73"></a>
 
 ### Which response variables are affected most strongly by the "important" explanatory variables?
 
@@ -355,7 +355,7 @@ of the protein variables).
     proteins can be found in Table [tab:sRDA_first_LV](#tab:sRDA_first_LV).
 
 
-<a id="org119c9ef"></a>
+<a id="org0448ac3"></a>
 
 ### What is the "quantified" effect of the explanatory variables on the response variables
 
@@ -378,8 +378,7 @@ latent variable (see Table [tab:sRDA_first_LV](#tab:sRDA_first_LV)).
     
     plot_cus(res_sRDA$variates$X[,1], Y[,"ER-alpha"], 
     	 ylab = "ER-alpha level", xlab = "Latent variable",
-    	 ylim = c(-4,4),
-    	 bg = col[1])
+    	 ylim = c(-4,4))
     
     abline(c(ER_lm), col=c(regression_line_col), lwd=c(2.5))
 
@@ -436,7 +435,7 @@ and other multivariate methods available from mixOmics in terms of
 objective function and also in terms of bilogical interpretability.
 
 
-<a id="org1a2b0bc"></a>
+<a id="orge0f76cb"></a>
 
 # Comparison of latent variable based methods in terms of objective functions
 
@@ -502,7 +501,7 @@ explanatory variables that explain the most variance in an outcome
 data set.
 
 
-<a id="org1279ee3"></a>
+<a id="org96b30eb"></a>
 
 # Cross validated analysis
 
@@ -771,7 +770,7 @@ non-zero parameter for the mRNA data source (Figure
 <./plots/fig_sRDA_cross_validation.pdf>
 
 
-<a id="org5839204"></a>
+<a id="org79e1c62"></a>
 
 # Compare sRDA and sPLS canonical mode with 5 components on mixOmics breast.TCGA data
 
@@ -782,7 +781,7 @@ dataset with 150 patients and 200 mrna and 142 protein measurement.
 optimization procedure). 
 
 
-<a id="orgfd491ff"></a>
+<a id="orgae4995b"></a>
 
 ## Overlapping variables
 
@@ -822,7 +821,7 @@ the second component, and there are no overlapping variables in
 consecutive latent variables (Figure [fig_overlap_sRDA_sPLS](#fig_overlap_sRDA_sPLS)).
 
 
-<a id="orgea94e63"></a>
+<a id="orgf78af57"></a>
 
 ## Benchmark correlation
 
@@ -975,7 +974,7 @@ consecutive latent variables (Figure [fig_overlap_sRDA_sPLS](#fig_overlap_sRDA_s
 </table>
 
 
-<a id="org6fd3c3b"></a>
+<a id="orgcff9182"></a>
 
 # References
 

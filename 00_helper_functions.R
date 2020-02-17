@@ -3,7 +3,10 @@ library(matrixStats)
 library(colorspace)
 #library(Rfast)
 #library(Rcpp)
-#sourceCpp("test.cpp")
+ #sourceCpp("test.cpp")
+library(RColorBrewer)
+
+regression_line_col <-  adjustcolor( "red", alpha.f = 0.5)
 
 reshape_sRDA_output_to_mixOmics <- function(X, Y, mix_omics_output, old_rda_output){
   # function takes the mix_omics_output output and overwrites 
