@@ -267,24 +267,26 @@ sRDA_mixOmics = function(X,
                          tol = 1e-06,
                          max.iter = 100,
                          penalty_mode = c("none", "enet", "ust"),
-                         ridge_penalty = 1,
+                         ridge_penalty = Inf,
                          cross_validate = FALSE,
+                         nr_CVfolds = 10,
                          logratio = "none"
                          )
 {
-    ## #tester values
+    #tester values
     ## X
     ## Y
     ## ncomp = 2
-    ## keepX = 10
+    ## keepX = c(5,10)
     ## keepY = dim(Y)[2]
-    ## scale = FALSE
+    ## scale = TRUE
     ## tol = 1e-06
     ## max.iter = 100
-    ## penalty_mode = c("ust")
-    ## ridge_penalty = 1
-    ## cross_validate = FALSE
+    ## penalty_mode = c("enet")
+    ## ridge_penalty = c(0.1)
+    ## cross_validate = TRUE
     ## logratio = "none"
+    ## nr_CVfolds = 10
 
     input.X = X # save the checked X, before logratio/multileve/scale
     input.Y = Y
@@ -306,13 +308,21 @@ sRDA_mixOmics = function(X,
                   penalization = penalty_mode,
                   ridge_penalty = ridge_penalty,
                   nonzero = keepX,
-                  multiple_LV = multiple_LV, 
-                  nr_LVs = ncomp)
+                  multiple_LV = multiple_LV,
+                  nr_LVs = ncomp,
+                  cross_validate = cross_validate,
+                  nr_subsets = nr_CVfolds)
 
     # create correct names structure
     colnames <- list("X" = colnames(X), "Y" = colnames(Y))  
     names <- list ("sample" = rownames(X), "colnames" = colnames, "blocks" = c("X", "Y"))
-    
+
+    #make lists
+    if(typeof(result$ALPHA)!="list"){
+        result$ALPHA <- list(result$ALPHA)
+        result$BETA <- list(result$BETA)
+        }
+
     # create correct loadings structure
     loadings <- list("X" = do.call(cbind,result$ALPHA), "Y" =  do.call(cbind,result$BETA))
     colnames(loadings$X) <- paste0("comp", seq_len(ncol(loadings$X)))
@@ -321,11 +331,15 @@ sRDA_mixOmics = function(X,
     loadings.star <- list("X" = apply(loadings$X,2,scale), "Y" = apply(loadings$Y,2,scale))
     rownames(loadings.star$X) <- rownames(loadings$X)
     rownames(loadings.star$Y) <- rownames(loadings$Y)
-
+    
     rownames(loadings$X) = rownames(loadings.star$X) = colnames$X
     rownames(loadings$Y) = rownames(loadings.star$Y) = colnames$Y
-    
-    
+
+    if(typeof(result$XI)!="list"){
+        result$XI = list(result$XI)
+        result$ETA = list(result$ETA)
+    }
+   
     # create correct variates structure
     variates <- list("X" = do.call(cbind,result$XI), "Y" =  do.call(cbind,result$ETA))
     colnames(variates$X) <- paste0("comp", seq_len(ncol(variates$X)))
@@ -361,7 +375,8 @@ sRDA_mixOmics = function(X,
         Y = Y, 
         ncomp = ncomp,
         mode = penalty_mode,
-        keepX = keepX, 
+        keepX = result$nr_nonzeros,
+        ridgePenaltySelected = result$ridge_penalty,
         keepY = keepY,
         variates = variates,
         loadings = loadings,
@@ -373,7 +388,8 @@ sRDA_mixOmics = function(X,
         scale = scale,
         logratio = logratio,
         explained_variance = explained_variance,
-        input.X = input.X
+        input.X = input.X,
+        CV_results = result$CV_results
         #nzv = result$nzv, #not implemented
         #mat.c = result$mat.c # not implemented, comes from internal_mint.block,
         #prob for multilevel studies
@@ -386,52 +402,52 @@ sRDA_mixOmics = function(X,
 }
 
 
-plot_CV_results <- function(res_object,
-                            xlim = c(),
-                            ylim = c(),
-                            ylab = "y",
-                            xlab = "x"){
+## plot_CV_results <- function(res_object,
+##                             xlim = c(),
+##                             ylim = c(),
+##                             ylab = "y",
+##                             xlab = "x"){
 
-    plot_cus(res_object$CV_results$mean_abs_cors[,3],
-             xlim = xlim,
-             ylim = ylim,
-             ylab = ylab,
-             xlab = xlab)
+##     plot_cus(res_object$CV_results$mean_abs_cors[,3],
+##              xlim = xlim,
+##              ylim = ylim,
+##              ylab = ylab,
+##              xlab = xlab)
 
-}
+## }
 
-plot_cus <- function(x = c(),y = c(), 
-                     xlim = c(),
-                     ylim = c(),
-                     xlab = "x",
-                     ylab = "y",
-                     bg = "#555555AA",
-                     col = "white",
-                     plot_Yaxis = "T",
-                     plot_Xaxis = "T",
-                     xaxt = "n",
-                     yaxt = "n",
-                     type = "n",
-                     axes = FALSE,
-                     plot_points = TRUE){
+## plot_cus <- function(x = c(),y = c(), 
+##                      xlim = c(),
+##                      ylim = c(),
+##                      xlab = "x",
+##                      ylab = "y",
+##                      bg = "#555555AA",
+##                      col = "white",
+##                      plot_Yaxis = "T",
+##                      plot_Xaxis = "T",
+##                      xaxt = "n",
+##                      yaxt = "n",
+##                      type = "n",
+##                      axes = FALSE,
+##                      plot_points = TRUE){
 
-    plot(x = x, y = y, 
-         xlim = xlim,
-         ylim = ylim,
-         xlab = xlab,
-         ylab = ylab,
-         axes = axes,
-         xaxt = xaxt,
-         yaxt = yaxt,
-         type = type
-         )
-    if(plot_Xaxis) axis(side = 1, las = 1, lwd = 2)
-    if(plot_Yaxis) axis(side = 2, las = 1, lwd = 2)
+##     plot(x = x, y = y, 
+##          xlim = xlim,
+##          ylim = ylim,
+##          xlab = xlab,
+##          ylab = ylab,
+##          axes = axes,
+##          xaxt = xaxt,
+##          yaxt = yaxt,
+##          type = type
+##          )
+##     if(plot_Xaxis) axis(side = 1, las = 1, lwd = 2)
+##     if(plot_Yaxis) axis(side = 2, las = 1, lwd = 2)
     
-    if(plot_points) points(x, y, pch = 21, cex = 1.5,
-                           col = col, bg = bg,
-                           lwd = 1)
-}
+##     if(plot_points) points(x, y, pch = 21, cex = 1.5,
+##                            col = col, bg = bg,
+##                            lwd = 1)
+## }
 
 
 plot_CV_results <- function(res_object,
