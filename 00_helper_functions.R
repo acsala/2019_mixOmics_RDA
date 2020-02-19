@@ -276,15 +276,15 @@ sRDA_mixOmics = function(X,
     #tester values
     ## X
     ## Y
-    ## ncomp = 2
-    ## keepX = c(5,10)
+    ## ncomp = 5
+    ## keepX = c(20)
     ## keepY = dim(Y)[2]
     ## scale = TRUE
     ## tol = 1e-06
     ## max.iter = 100
     ## penalty_mode = c("enet")
-    ## ridge_penalty = c(0.1)
-    ## cross_validate = TRUE
+    ## ridge_penalty = Inf
+    ## cross_validate = FALSE
     ## logratio = "none"
     ## nr_CVfolds = 10
 
