@@ -269,6 +269,7 @@ sRDA_mixOmics = function(X,
                          penalty_mode = c("none", "enet", "ust"),
                          ridge_penalty = Inf,
                          cross_validate = FALSE,
+                         parallel_CV = FALSE,
                          nr_CVfolds = 10,
                          logratio = "none"
                          )
@@ -311,7 +312,8 @@ sRDA_mixOmics = function(X,
                   multiple_LV = multiple_LV,
                   nr_LVs = ncomp,
                   cross_validate = cross_validate,
-                  nr_subsets = nr_CVfolds)
+                  nr_subsets = nr_CVfolds,
+                  parallel_CV = parallel_CV)
 
     # create correct names structure
     colnames <- list("X" = colnames(X), "Y" = colnames(Y))  
