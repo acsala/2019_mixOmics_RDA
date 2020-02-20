@@ -270,6 +270,8 @@ sRDA_mixOmics = function(X,
                          ridge_penalty = Inf,
                          cross_validate = FALSE,
                          parallel_CV = FALSE,
+                         CV_nonzer_grid,
+                         CV_ridge_grid = c(Inf),
                          nr_CVfolds = 10,
                          logratio = "none"
                          )
@@ -291,6 +293,11 @@ sRDA_mixOmics = function(X,
 
     input.X = X # save the checked X, before logratio/multileve/scale
     input.Y = Y
+
+    if(cross_validate){
+        keepX = CV_nonzer_grid
+        ridge_penalty = CV_ridge_grid
+    }
     
     if(ncomp > 1){
         multiple_LV = TRUE
