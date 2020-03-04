@@ -482,7 +482,6 @@ plot_CV_results <- function(res_object,
 
     x_lims <- range(x)
     x_splines <- seq(from = x_lims[1], to = x_lims[2], length.out = 100)
-    x_splines
     
     plot_cus(y = y,
              x = x,
