@@ -468,31 +468,42 @@ plot_CV_results <- function(res_object,
                             labels_Yaxis = c(),
                             labels_Xat = c(),
                             labels_Yat = c(),
-                            spline_all_knots = T,
-                            spline_df = T){
-  
-  x = 1:length(res_object$CV_results$mean_abs_cors[,3])
-  y = res_object$CV_results$mean_abs_cors[,3]
-  plot_cus(y = y,
-           x = x,
-           xlim = xlim,
-           ylim = ylim,
-           ylab = ylab,
-           xlab = xlab,
-           labels_Xaxis = res_object$CV_results$mean_abs_cors[,2],
-           labels_Yaxis = labels_Yaxis,
-           labels_Xat = x,
-           labels_Yat = labels_Yat)
+                            spline_all_knots = TRUE,
+                            spline_df = TRUE,
+                            which_ridge = TRUE){
 
-  if(spline_df == T){
-    spline_df = length(x)
-  }
+    if (which_ridge == TRUE){
+        which_ridge <- res_object$CV_results$best_ridge}
+    ylab = paste0(ylab, " with a ridge penalty of ", which_ridge)
+    
+    rows_selection <- which(res_object$CV_results$mean_abs_cors[,1]==which_ridge)
+    x = 1:length(res_object$CV_results$mean_abs_cors[rows_selection,3])
+    y = res_object$CV_results$mean_abs_cors[rows_selection,3]
 
-  spline_res <- smooth.spline(x, y,
-                              all.knots = spline_all_knots,
-                              df= spline_df)
+    x_lims <- range(x)
+    x_splines <- seq(from = x_lims[1], to = x_lims[2], length.out = 100)
+    x_splines
+    
+    plot_cus(y = y,
+             x = x,
+             xlim = xlim,
+             ylim = ylim,
+             ylab = ylab,
+             xlab = xlab,
+             labels_Xaxis = res_object$CV_results$mean_abs_cors[rows_selection,2],
+             labels_Yaxis = labels_Yaxis,
+             labels_Xat = x,
+             labels_Yat = labels_Yat)
 
-  lines(predict(spline_res, x)$y, col = "grey", lwd = 2)
+    if(spline_df == TRUE){
+        spline_df = length(x)
+    }
+
+    spline_res <- smooth.spline(x, y,
+                                all.knots = spline_all_knots,
+                                df= spline_df)
+
+    lines(x_splines, predict(spline_res, x_splines)$y, col = "grey", lwd = 2)
 
 }
 
